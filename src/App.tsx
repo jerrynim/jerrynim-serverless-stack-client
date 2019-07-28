@@ -1,15 +1,30 @@
-import React, { useState, Fragment } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Nav, Navbar, NavItem } from "react-bootstrap";
 import "./App.css";
 import Routes from "./Routes";
+import { Auth } from "aws-amplify";
 
-const App: React.FC = () => {
+const App: React.SFC = () => {
   const [isAuthenticated, setAuthenticated] = useState(false);
-
+  const [isAuthenticating, setAuthenticating] = useState(true);
   const userHasAuthenticated = (authenticated: boolean) => {
     setAuthenticated(authenticated);
   };
+  useEffect(() => {
+    const LoginCheck = async () => {
+      await Auth.currentSession();
+    };
+    try {
+      LoginCheck();
+      setAuthenticated(true);
+    } catch (e) {
+      if (e !== "No current user") {
+        alert(e);
+      }
+    }
+    setAuthenticating(false);
+  }, []);
 
   const handleLogout = () => {
     setAuthenticated(false);
@@ -19,7 +34,7 @@ const App: React.FC = () => {
     isAuthenticated,
     userHasAuthenticated
   };
-  return (
+  return !isAuthenticating ? (
     <div className="App container">
       <Navbar collapseOnSelect>
         <Navbar>
@@ -28,26 +43,24 @@ const App: React.FC = () => {
           </Navbar.Brand>
         </Navbar>
         <Navbar.Collapse>
-          <Nav>
-            <Link to="/signup">Signup</Link>
-            <Link to="/login">Login</Link>
-          </Nav>
+          {isAuthenticated ? (
+            <NavItem onClick={handleLogout}>Logout</NavItem>
+          ) : (
+            <>
+              <Link to="/signup">
+                <NavItem>Signup</NavItem>
+              </Link>
+              <Link to="/login">
+                <NavItem>Login</NavItem>
+              </Link>
+            </>
+          )}
         </Navbar.Collapse>
       </Navbar>
       <Routes childProps={childProps} />
-      {isAuthenticated ? (
-        <NavItem onClick={handleLogout}>Logout</NavItem>
-      ) : (
-        <>
-          <Link to="/signup">
-            <NavItem>Signup</NavItem>
-          </Link>
-          <Link to="/login">
-            <NavItem>Login</NavItem>
-          </Link>
-        </>
-      )}
     </div>
+  ) : (
+    <div />
   );
 };
 
