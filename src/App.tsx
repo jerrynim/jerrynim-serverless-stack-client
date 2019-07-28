@@ -4,8 +4,11 @@ import { Nav, Navbar, NavItem } from "react-bootstrap";
 import "./App.css";
 import Routes from "./Routes";
 import { Auth } from "aws-amplify";
+import useReactRouter from "use-react-router";
 
 const App: React.SFC = () => {
+  const { history, location, match } = useReactRouter();
+
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [isAuthenticating, setAuthenticating] = useState(true);
   const userHasAuthenticated = (authenticated: boolean) => {
@@ -18,6 +21,7 @@ const App: React.SFC = () => {
     try {
       LoginCheck();
       setAuthenticated(true);
+      history.push("/");
     } catch (e) {
       if (e !== "No current user") {
         alert(e);
@@ -26,8 +30,11 @@ const App: React.SFC = () => {
     setAuthenticating(false);
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    await Auth.signOut();
+
     setAuthenticated(false);
+    history.push("/login");
   };
 
   const childProps = {
