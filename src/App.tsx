@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Nav, Navbar, NavItem } from "react-bootstrap";
+import { Navbar, NavItem } from "react-bootstrap";
 import "./App.css";
 import Routes from "./Routes";
 import { Auth } from "aws-amplify";
 import useReactRouter from "use-react-router";
 
 const App: React.SFC = () => {
-  const { history, location, match } = useReactRouter();
+  const { history } = useReactRouter();
 
   const [isAuthenticated, setAuthenticated] = useState(false);
   const [isAuthenticating, setAuthenticating] = useState(true);
@@ -28,7 +28,7 @@ const App: React.SFC = () => {
       }
     }
     setAuthenticating(false);
-  }, []);
+  }, [setAuthenticating, history]);
 
   const handleLogout = async () => {
     await Auth.signOut();

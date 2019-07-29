@@ -2,6 +2,7 @@ import React, { useState, useCallback } from "react";
 import { Button, FormGroup } from "react-bootstrap";
 import "./Login.css";
 import { Auth } from "aws-amplify";
+import useReactRouter from "use-react-router";
 
 const Login: React.FC = () => {
   const useInput = (defaultValue: string = "") => {
@@ -12,6 +13,8 @@ const Login: React.FC = () => {
     return { value, onChange };
   };
 
+  const { history } = useReactRouter();
+  const [isLoading, setLoading] = useState(false);
   const email = useInput("");
   const password = useInput("");
 
@@ -23,11 +26,13 @@ const Login: React.FC = () => {
     event
   ) => {
     event.preventDefault();
+    setLoading(true);
     try {
       await Auth.signIn(email.value, password.value);
-      alert("Logged in");
+      history.push("/");
     } catch (e) {
       alert(e.message);
+      setLoading(false);
     }
   };
 
