@@ -3,16 +3,14 @@ import { Button, FormGroup } from "react-bootstrap";
 import "./Login.css";
 import { Auth } from "aws-amplify";
 import useReactRouter from "use-react-router";
-
+export const useInput = (defaultValue: string = "") => {
+  const [value, setValue] = useState(defaultValue);
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setValue(e.target.value);
+  }, []);
+  return { value, onChange };
+};
 const Login: React.FC = () => {
-  const useInput = (defaultValue: string = "") => {
-    const [value, setValue] = useState(defaultValue);
-    const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-      setValue(e.target.value);
-    }, []);
-    return { value, onChange };
-  };
-
   const { history } = useReactRouter();
   const [isLoading, setLoading] = useState(false);
   const email = useInput("");

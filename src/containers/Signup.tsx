@@ -1,140 +1,113 @@
-import React, { Component } from "react";
-import { FormGroup, FormControl } from "react-bootstrap";
-import LoaderButton from "../components/LoaderButton";
-import "./Signup.css";
+import React, { useState } from "react";
+import "./SignUp.css";
+import { useInput } from "./Login";
+import { Auth } from "aws-amplify";
+import useReactRouter from "use-react-router";
 
-interface IState {
-  isLoading: boolean;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  confirmationCode: string;
-  newUser: any;
+interface IProps {
+  props: {
+    isAuthenticated: boolean;
+    userHasAuthenticated: (authenticated: boolean) => void;
+  };
 }
 
-export default class Signup extends Component<_, IState> {
-  constructor(props: any) {
-    super(props);
+const Signup: React.FC<IProps> = ({ props }) => {
+  const [isLoading, setLoading] = useState(false);
+  const email = useInput("");
+  const password = useInput("");
+  const confirmPassword = useInput("");
+  const confirmationCode = useInput("");
+  const [newUser, setNewUser] = useState();
+  const { history } = useReactRouter();
 
-    this.state = {
-      isLoading: false,
-      email: "",
-      password: "",
-      confirmPassword: "",
-      confirmationCode: "",
-      newUser: null
-    };
-  }
-
-  validateForm() {
-    const { email, password, confirmPassword } = this.state;
+  const validateForm = () => {
     return (
-      email.length > 0 && password.length > 0 && password === confirmPassword
+      email.value.length > 0 &&
+      password.value.length > 0 &&
+      password === confirmPassword
     );
-  }
-
-  validateConfirmationForm() {
-    const { confirmationCode } = this.state;
-
-    return confirmationCode.length > 0;
-  }
-
-  handleChange = (event) => {
-    this.setState({
-      [event.target.id]: event.target.value
-    });
   };
 
-  handleSubmit = async (event) => {
+  const validateConfirmationForm = () => {
+    return confirmationCode.value.length > 0;
+  };
+
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
+    event
+  ) => {
     event.preventDefault();
 
-    this.setState({ isLoading: true });
-
-    this.setState({ newUser: "test" });
-
-    this.setState({ isLoading: false });
+    setLoading(true);
+    try {
+      const newUser = await Auth.signUp({
+        username: email.value,
+        password: password.value
+      });
+      setNewUser(newUser);
+    } catch (e) {
+      alert(e.message);
+    }
+    setLoading(false);
   };
 
-  handleConfirmationSubmit = async (event) => {
+  const handleConfirmationSubmit: React.FormEventHandler<
+    HTMLFormElement
+  > = async (event) => {
     event.preventDefault();
 
-    this.setState({ isLoading: true });
+    setLoading(true);
+    try {
+      await Auth.confirmSignUp(email.value, confirmationCode.value);
+      await Auth.signIn(email.value, password.value);
+      props.userHasAuthenticated(true);
+      console.log("hok");
+      history.push("/");
+    } catch (e) {
+      alert(e.message);
+      setLoading(false);
+    }
   };
 
-  renderConfirmationForm() {
+  const renderConfirmationForm = () => {
     return (
-      <form onSubmit={this.handleConfirmationSubmit}>
-        <FormGroup controlId="confirmationCode" bsSize="large">
-          <ControlLabel>Confirmation Code</ControlLabel>
-          <FormControl
-            autoFocus
-            type="tel"
-            value={this.state.confirmationCode}
-            onChange={this.handleChange}
-          />
-          <HelpBlock>Please check your email for the code.</HelpBlock>
-        </FormGroup>
-        <LoaderButton
-          block
-          bsSize="large"
-          disabled={!this.validateConfirmationForm()}
-          type="submit"
-          isLoading={this.state.isLoading}
-          text="Verify"
-          loadingText="Verifying…"
-        />
+      <form onSubmit={handleConfirmationSubmit}>
+        <div id="confirmationCode">
+          <label>Confirmation Code</label>
+          <input autoFocus type="tel" {...confirmationCode} />
+          <div>Please check your email for the code.</div>
+        </div>
+        <button disabled={validateConfirmationForm()} type="submit">
+          signup
+        </button>
       </form>
     );
-  }
+  };
 
-  renderForm() {
+  const renderForm = () => {
     return (
-      <form onSubmit={this.handleSubmit}>
-        <FormGroup controlId="email" bsSize="large">
-          <ControlLabel>Email</ControlLabel>
-          <FormControl
-            autoFocus
-            type="email"
-            value={this.state.email}
-            onChange={this.handleChange}
-          />
-        </FormGroup>
-        <FormGroup controlId="password" bsSize="large">
-          <ControlLabel>Password</ControlLabel>
-          <FormControl
-            value={this.state.password}
-            onChange={this.handleChange}
-            type="password"
-          />
-        </FormGroup>
-        <FormGroup controlId="confirmPassword" bsSize="large">
-          <ControlLabel>Confirm Password</ControlLabel>
-          <FormControl
-            value={this.state.confirmPassword}
-            onChange={this.handleChange}
-            type="password"
-          />
-        </FormGroup>
-        <LoaderButton
-          block
-          bsSize="large"
-          disabled={!this.validateForm()}
-          type="submit"
-          isLoading={this.state.isLoading}
-          text="Signup"
-          loadingText="Signing up…"
-        />
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Email</label>
+          <input autoFocus type="email" {...email} />
+        </div>
+        <div>
+          <label>Password</label>
+          <input {...password} type="password" />
+        </div>
+        <div>
+          <label>Confirm Password</label>
+          <input {...confirmPassword} type="password" />
+        </div>
+        <button disabled={validateForm()}>sign up</button>
       </form>
     );
-  }
+  };
 
-  render() {
-    return (
-      <div className="Signup">
-        {this.state.newUser === null
-          ? this.renderForm()
-          : this.renderConfirmationForm()}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="Signup">
+      {newUser === undefined ? renderForm() : renderConfirmationForm()}
+    </div>
+  );
+};
+
+export default Signup;
