@@ -21,7 +21,6 @@ const App: React.SFC = () => {
     try {
       LoginCheck();
       setAuthenticated(true);
-      history.push("/");
     } catch (e) {
       if (e !== "No current user") {
         alert(e);

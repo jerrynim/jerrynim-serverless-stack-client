@@ -15,6 +15,6 @@ const AppliedRoute: React.FC<IProps> = ({
   component: C,
   props: cProps,
   ...rest
-}) => <Route {...rest} render={(props) => <C {...props} {...cProps} />} />;
+}) => <Route {...rest} render={(props) => <C {...props} />} />;
 
 export default AppliedRoute;

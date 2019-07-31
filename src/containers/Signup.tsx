@@ -76,7 +76,7 @@ const Signup: React.FC<IProps> = ({ props }) => {
           <input autoFocus type="tel" {...confirmationCode} />
           <div>Please check your email for the code.</div>
         </div>
-        <button disabled={validateConfirmationForm()} type="submit">
+        <button disabled={!validateConfirmationForm()} type="submit">
           signup
         </button>
       </form>
