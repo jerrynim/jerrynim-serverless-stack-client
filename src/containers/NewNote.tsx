@@ -1,13 +1,17 @@
 import React, { useState } from "react";
-import { FormGroup, FormControl } from "react-bootstrap";
+import { FormGroup } from "react-bootstrap";
 import config from "../config";
 import "./NewNote.css";
 import { useInput } from "./Login";
-
+import { s3Upload } from "../libs/awsLib";
+import { API } from "aws-amplify";
+import useReactRouter from "use-react-router";
 const NewNote: React.FC = () => {
   const [file, setFile] = useState();
   const [isLoading, setLoading] = useState();
   const content = useInput();
+
+  const { history } = useReactRouter();
 
   const validateForm = () => {
     return content.value.length > 0;
@@ -15,7 +19,13 @@ const NewNote: React.FC = () => {
 
   const handleFileChange: React.ChangeEventHandler<HTMLInputElement> = (e) => {
     const file = e.target.files![0];
-    console.log(file);
+    setFile(file);
+  };
+
+  const createNote = async (note: any) => {
+    return await API.post("notes", "/notes", {
+      body: note
+    });
   };
 
   const handleSubmit: React.FormEventHandler<HTMLFormElement> = async (
@@ -32,6 +42,18 @@ const NewNote: React.FC = () => {
     }
 
     setLoading(true);
+
+    try {
+      const attachment = file ? await s3Upload(file) : null;
+      await createNote({
+        attachment,
+        content: content.value
+      });
+      history.push("/");
+    } catch (e) {
+      alert(e);
+      setLoading(false);
+    }
   };
 
   return (
