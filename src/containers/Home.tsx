@@ -35,7 +35,6 @@ const Home: React.FC<IProps> = ({ isAuthenticated }) => {
 
     setLoading(false);
   }, []);
-  console.log(notes);
   const renderLander = () => {
     return (
       <div className="lander">

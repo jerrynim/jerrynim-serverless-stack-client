@@ -6,6 +6,7 @@ import Login from "./containers/Login";
 import AppliedRoute from "./containers/AppliedRoute";
 import Signup from "./containers/Signup";
 import NewNote from "./containers/NewNote";
+import Notes from "./containers/Notes";
 
 interface IProps {
   childProps: {
@@ -25,6 +26,13 @@ const Routes: React.FC<IProps> = ({ childProps }) => (
       component={NewNote}
       props={childProps}
     />
+    <AppliedRoute
+      path="/notes/:id"
+      exact
+      component={Notes}
+      props={childProps}
+    />
+
     {/* Finally, catch all unmatched routes */}
     <Route exact component={NotFound} />
   </Switch>
