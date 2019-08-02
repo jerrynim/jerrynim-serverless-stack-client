@@ -60,7 +60,6 @@ const Signup: React.FC<IProps> = ({ props }) => {
       await Auth.confirmSignUp(email.value, confirmationCode.value);
       await Auth.signIn(email.value, password.value);
       props.userHasAuthenticated(true);
-      console.log("hok");
       history.push("/");
     } catch (e) {
       alert(e.message);
